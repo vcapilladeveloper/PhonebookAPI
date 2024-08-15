@@ -58,6 +58,24 @@ app.delete('/api/persons/:id', (request, response) => {
 app.post('/api/persons', (request, response) => {
     const body = request.body
     console.log(body)
+    if (!body.name) {
+        return response.status(400).json({
+            error: 'name missing'
+        })
+    }
+
+    if (!body.number) {
+        return response.status(400).json({
+            error: 'number missing'
+        })
+    }
+
+    if (persons.find(n => n.name === body.name)) {
+        return response.status(400).json({
+            error: `Already existing person with the name ${body.name}`
+        })
+    }
+
     const person = {
         name: body.name,
         number: body.number,
@@ -68,7 +86,6 @@ app.post('/api/persons', (request, response) => {
 
     response.json(person)
 })
-
 
 const PORT = 3001
 app.listen(PORT, () => {
