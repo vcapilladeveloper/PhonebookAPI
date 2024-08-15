@@ -32,10 +32,20 @@ const requestLogger = (request, response, next) => {
     console.log('---')
     next()
 }
-
+morgan.token('content', function (req, res) { return JSON.stringify(req.body) })
 app.use(express.json())
 app.use(requestLogger)
-app.use(morgan('tiny'))
+app.use(morgan(function (tokens, req, res) {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      tokens.content(req, res)
+    ].join(' ')
+  }))
+// app.use(morgan('tiny'))
 
 app.get('/api/persons', (request, response) => {
     response.json(persons)
