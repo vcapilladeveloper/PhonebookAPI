@@ -51,7 +51,7 @@ app.get('/api/persons', (request, response, next) => {
     Person.find({}).then(persons => {
         response.json(persons)
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 // Get the number of persons in DB
@@ -62,29 +62,29 @@ app.get('/info', (request, response, next) => {
             <p>${Date()}</p>`
         )
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
 })
 
 // Get info for 1 person passing ID from DB
 app.get('/api/persons/:id', (request, response, next) => {
-    Person.find({ _id: `${request.params.id}`})
-    .then(persons => {
-        if (persons) {
-            response.json(persons)
-        } else {
-            response.status(404).end()
-        }
-    })
-    .catch(error => next(error))
+    Person.find({ _id: `${request.params.id}` })
+        .then(persons => {
+            if (persons) {
+                response.json(persons)
+            } else {
+                response.status(404).end()
+            }
+        })
+        .catch(error => next(error))
 })
 
 // Remove person from DB passing ID
 app.delete('/api/persons/:id', (request, response, next) => {
-    Person.findByIdAndDelete(request.params.id) 
-    .then(result => {
-        response.status(204).end()
-    })
-    .catch(error => next(error))
+    Person.findByIdAndDelete(request.params.id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => next(error))
 })
 
 // Save new person in DB
@@ -112,7 +112,22 @@ app.post('/api/persons', (request, response, next) => {
     person.save().then(savedPerson => {
         response.json(savedPerson)
     })
-    .catch(error => next(error))
+        .catch(error => next(error))
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+
+    const person = ({
+        name: body.name,
+        number: body.number
+    })
+
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+        .then(updatedPerson => {
+            response.json(updatedPerson)
+        })
+        .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
