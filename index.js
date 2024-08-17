@@ -1,9 +1,19 @@
+// Adds .env to the index
 require('dotenv').config()
+
+// Add Express as framework to deal with HTTP methods
 const express = require('express')
+
+// Create Express instance
 const app = express()
+
+// Create morgan instance
 const morgan = require('morgan')
+
+// Create Person DB connection
 const Person = require('./models/person')
 
+// Logger middleware
 const requestLogger = (request, response, next) => {
     console.log('Method:', request.method)
     console.log('Path:  ', request.path)
@@ -11,10 +21,20 @@ const requestLogger = (request, response, next) => {
     console.log('---')
     next()
 }
+
+// Frontend import
 app.use(express.static('dist'))
+
+// Define new token for morgan -> Print body
 morgan.token('content', function (req, res) { return JSON.stringify(req.body) })
+
+// Json tools
 app.use(express.json())
+
+// Add requestLogger as middleware
 app.use(requestLogger)
+
+// Define structure for Morgan Logger Middleware
 app.use(morgan(function (tokens, req, res) {
     return [
         tokens.method(req, res),
@@ -25,14 +45,15 @@ app.use(morgan(function (tokens, req, res) {
         tokens.content(req, res)
     ].join(' ')
 }))
-// app.use(morgan('tiny'))
 
+// Get all persons from DB
 app.get('/api/persons', (request, response) => {
     Person.find({}).then(persons => {
         response.json(persons)
     })
 })
 
+// Get the number of persons in DB
 app.get('/info', (request, response) => {
     Person.find({}).then(persons => {
         response.send(
@@ -42,6 +63,7 @@ app.get('/info', (request, response) => {
     })
 })
 
+// Get info for 1 person passing ID from DB
 app.get('/api/persons/:id', (request, response) => {
     Person.find({ _id: `${request.params.id}`}).then(persons => {
         if (persons) {
@@ -59,6 +81,7 @@ app.delete('/api/persons/:id', (request, response) => {
     response.status(204).end()
 })
 
+// Save new person in DB
 app.post('/api/persons', (request, response) => {
     const body = request.body
     console.log(body)
@@ -74,21 +97,15 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    if (persons.find(n => n.name === body.name)) {
-        return response.status(400).json({
-            error: `Already existing person with the name ${body.name}`
-        })
-    }
-
-    const person = {
+    const person = new Person({
         name: body.name,
         number: body.number,
         id: `${Math.random() * 9999}`,
-    }
+    })
 
-    persons = persons.concat(person)
-
-    response.json(person)
+    person.save().then(savedPerson => {
+        response.json(savedPerson)
+    })
 })
 
 const unknownEndpoint = (request, response) => {
